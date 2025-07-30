@@ -15,7 +15,7 @@ public class UpdateProfileRequest {
 	private String username;
 
 	@NotBlank(message = "Email不能空白")
-	@Email(message = "Email格式錯誤")
+	@Email(message = "Email錯誤")
 	private String email;
 
 }

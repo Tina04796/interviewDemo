@@ -60,7 +60,6 @@ public class RoomServiceImpl implements RoomService {
         }).orElse(false);
     }
 
-    // DTO轉換：RoomRequest -> Room
     private Room convertToEntity(RoomRequest request) {
         Room room = new Room();
         room.setName(request.getName());
@@ -69,7 +68,6 @@ public class RoomServiceImpl implements RoomService {
         return room;
     }
 
-    // DTO轉換：Room -> RoomResponse
     private RoomResponse convertToResponse(Room room) {
         RoomResponse response = new RoomResponse();
         response.setId(room.getId());

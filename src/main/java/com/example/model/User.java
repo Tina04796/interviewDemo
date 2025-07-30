@@ -24,7 +24,7 @@ public class User {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	@Setter(AccessLevel.NONE) // Lombok不產setRole
+	@Setter(AccessLevel.NONE)
 	private Role role;
 
 	public void setRole(Role role) {

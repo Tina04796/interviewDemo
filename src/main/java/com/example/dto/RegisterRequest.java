@@ -17,7 +17,7 @@ public class RegisterRequest {
     @NotBlank(message = "密碼不能空白")
     private String password;
 
-    @Email(message = "Email格式錯誤")
+    @Email(message = "Email錯誤")
     private String email;
 
 }

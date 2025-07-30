@@ -22,7 +22,7 @@ public class DataInitializer implements CommandLineRunner {
         if (!adminExists) {
             User admin = User.builder()
                     .username("admin")
-                    .password(passwordEncoder.encode("admin123"))  // 預設密碼，部署後請改
+                    .password(passwordEncoder.encode("admin123"))  // 預設密碼，之後再改
                     .email("admin@example.com")
                     .role(Role.ADMIN)
                     .build();
