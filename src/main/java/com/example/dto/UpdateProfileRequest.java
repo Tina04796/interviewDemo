@@ -11,11 +11,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UpdateProfileRequest {
 
-	@NotBlank(message = "帳號不能空白")
+	@NotBlank(message = "Username required")
 	private String username;
 
-	@NotBlank(message = "Email不能空白")
-	@Email(message = "Email錯誤")
+	@NotBlank(message = "Email required")
+	@Email(message = "Invalid email")
 	private String email;
 
 }

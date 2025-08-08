@@ -18,6 +18,13 @@ public interface ReservationService {
 
     boolean deleteReservation(Long id);
 
-    // 標記為取消但不刪除
+    
+    
+    
     Optional<ReservationResponse> cancelReservation(Long id);
+    
+    Optional<ReservationResponse> refundReservation(Long id);
+    
+    Optional<ReservationResponse> confirmReservation(Long id);  // 已付款
+
 }

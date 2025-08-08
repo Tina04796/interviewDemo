@@ -31,7 +31,7 @@ public class UserController {
 		}
 
 		if (userService.existsByUsername(request.getUsername())) {
-			return ResponseEntity.badRequest().body(Map.of("error", "此帳號已有人使用"));
+			return ResponseEntity.badRequest().body(Map.of("error", "Username taken"));
 		}
 
 		UserResponse userResponse = userService.register(request);
@@ -48,7 +48,7 @@ public class UserController {
 		if (token != null) {
 			return ResponseEntity.ok(Map.of("token", token));
 		}
-		return ResponseEntity.status(401).body(Map.of("error", "帳號或密碼錯誤"));
+		return ResponseEntity.status(401).body(Map.of("error", "Invalid username or password"));
 	}
 
 	@GetMapping("/{id}")
@@ -75,9 +75,9 @@ public class UserController {
 
 		boolean updated = userService.updatePassword(id, request);
 		if (updated) {
-			return ResponseEntity.ok(Map.of("message", "密碼更新成功"));
+			return ResponseEntity.ok(Map.of("message", "Password updated successfully"));
 		} else {
-			return ResponseEntity.status(400).body(Map.of("error", "舊密碼錯誤"));
+			return ResponseEntity.status(400).body(Map.of("error", "Current password is incorrect"));
 		}
 	}
 

@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UpdatePasswordRequest {
 
-    @NotBlank(message = "舊密碼不能空白")
+    @NotBlank(message = "Current password required")
     private String oldPassword;
 
-    @NotBlank(message = "新密碼不能空白")
+    @NotBlank(message = "New password required")
     private String newPassword;
 }

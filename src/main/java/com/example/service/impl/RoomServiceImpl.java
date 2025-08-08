@@ -18,62 +18,52 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RoomServiceImpl implements RoomService {
 
-    private final RoomRepository roomRepository;
+	private final RoomRepository roomRepository;
 
-    @Override
-    public List<RoomResponse> getAllRooms() {
-        List<Room> rooms = roomRepository.findAll();
-        return rooms.stream()
-            .map(this::convertToResponse)
-            .collect(Collectors.toList());
-    }
+	@Override
+	public List<RoomResponse> getAllRooms() {
+		List<Room> rooms = roomRepository.findAll();
+		return rooms.stream().map(this::convertToResponse).collect(Collectors.toList());
+	}
 
-    @Override
-    public Optional<RoomResponse> getRoomById(Long id) {
-        return roomRepository.findById(id)
-            .map(this::convertToResponse);
-    }
+	@Override
+	public Optional<RoomResponse> getRoomById(Long id) {
+		return roomRepository.findById(id).map(this::convertToResponse);
+	}
 
-    @Override
-    public RoomResponse createRoom(RoomRequest roomRequest) {
-        Room room = convertToEntity(roomRequest);
-        Room saved = roomRepository.save(room);
-        return convertToResponse(saved);
-    }
+	@Override
+	public RoomResponse createRoom(RoomRequest roomRequest) {
+		Room room = convertToEntity(roomRequest);
+		Room saved = roomRepository.save(room);
+		return convertToResponse(saved);
+	}
 
-    @Override
-    public Optional<RoomResponse> updateRoom(Long id, RoomRequest roomRequest) {
-        return roomRepository.findById(id).map(room -> {
-            room.setName(roomRequest.getName());
-            room.setLocation(roomRequest.getLocation());
-            room.setCapacity(roomRequest.getCapacity());
-            Room updated = roomRepository.save(room);
-            return convertToResponse(updated);
-        });
-    }
+	@Override
+	public Optional<RoomResponse> updateRoom(Long id, RoomRequest roomRequest) {
+		return roomRepository.findById(id).map(room -> {
+			room.setName(roomRequest.getName());
+			room.setLocation(roomRequest.getLocation());
+			room.setCapacity(roomRequest.getCapacity());
+			Room updated = roomRepository.save(room);
+			return convertToResponse(updated);
+		});
+	}
 
-    @Override
-    public boolean deleteRoom(Long id) {
-        return roomRepository.findById(id).map(room -> {
-            roomRepository.delete(room);
-            return true;
-        }).orElse(false);
-    }
+	@Override
+	public boolean deleteRoom(Long id) {
+		return roomRepository.findById(id).map(room -> {
+			roomRepository.delete(room);
+			return true;
+		}).orElse(false);
+	}
 
-    private Room convertToEntity(RoomRequest request) {
-        Room room = new Room();
-        room.setName(request.getName());
-        room.setLocation(request.getLocation());
-        room.setCapacity(request.getCapacity());
-        return room;
-    }
+	private Room convertToEntity(RoomRequest request) {
+		return Room.builder().name(request.getName()).location(request.getLocation()).capacity(request.getCapacity())
+				.build();
+	}
 
-    private RoomResponse convertToResponse(Room room) {
-        RoomResponse response = new RoomResponse();
-        response.setId(room.getId());
-        response.setName(room.getName());
-        response.setLocation(room.getLocation());
-        response.setCapacity(room.getCapacity());
-        return response;
-    }
+	private RoomResponse convertToResponse(Room room) {
+		return RoomResponse.builder().id(room.getId()).name(room.getName()).location(room.getLocation())
+				.capacity(room.getCapacity()).build();
+	}
 }

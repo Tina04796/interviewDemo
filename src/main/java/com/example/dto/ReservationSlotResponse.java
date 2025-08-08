@@ -1,6 +1,7 @@
 package com.example.dto;
 
-import com.example.model.Role;
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,14 +11,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserResponse {
+public class ReservationSlotResponse {
 
-    private Long id;
-
-    private String username;
-
-    private Role role;
-
-    private String email;
-
+	private Long id;
+	
+	private LocalDateTime startTime;
+	
+	private LocalDateTime endTime;
+	
 }

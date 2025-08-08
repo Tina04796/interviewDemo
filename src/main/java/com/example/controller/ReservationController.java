@@ -63,14 +63,24 @@ public class ReservationController {
 		if (deleted) {
 			return ResponseEntity.noContent().build();
 		} else {
-			return ResponseEntity.status(404).body(Map.of("error", "找不到此預約"));
+			return ResponseEntity.status(404).body(Map.of("error", "Booking not found"));
 		}
 	}
-	
-	@PatchMapping("/cancel/{id}")
+
+	@PatchMapping("/{id}/cancel")
 	public ResponseEntity<ReservationResponse> cancelReservation(@PathVariable Long id) {
-	    return reservationService.cancelReservation(id)
-	            .map(ResponseEntity::ok)
-	            .orElse(ResponseEntity.status(404).build());
+		return reservationService.cancelReservation(id).map(ResponseEntity::ok)
+				.orElse(ResponseEntity.status(404).build());
 	}
+
+	@PatchMapping("/{id}/confirm")
+	public ResponseEntity<?> confirmReservation(@PathVariable Long id) {
+		try {
+			return reservationService.confirmReservation(id).map(ResponseEntity::ok)
+					.orElse(ResponseEntity.notFound().build());
+		} catch (IllegalStateException e) {
+			return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+		}
+	}
+
 }

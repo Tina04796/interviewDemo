@@ -1,6 +1,6 @@
 package com.example.dto;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -12,16 +12,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ReservationRequest {
 
-	@NotNull(message = "房間ID不能空白")
-	private Long userId;
-	
-	@NotNull(message = "預約名稱不能空白")
-	private Long roomId;
-	
-	@NotNull(message = "開始時間不能空白")
-	private LocalDateTime startTime;
-	
-	@NotNull(message = "結束時間不能空白")
-	private LocalDateTime endTime;
+    @NotNull(message = "User ID required")
+    private Long userId;
 
+    @NotNull(message = "Room ID required")
+    private Long roomId;
+
+    @NotNull(message = "Slots required")
+    private List<ReservationSlotRequest> slots;
 }

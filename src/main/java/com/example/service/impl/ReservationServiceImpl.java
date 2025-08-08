@@ -1,5 +1,6 @@
 package com.example.service.impl;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -9,7 +10,11 @@ import org.springframework.stereotype.Service;
 
 import com.example.dto.ReservationRequest;
 import com.example.dto.ReservationResponse;
+import com.example.dto.ReservationSlotRequest;
+import com.example.dto.ReservationSlotResponse;
 import com.example.model.Reservation;
+import com.example.model.ReservationPaymentStatus;
+import com.example.model.ReservationSlot;
 import com.example.model.ReservationStatus;
 import com.example.model.Room;
 import com.example.model.User;
@@ -35,8 +40,31 @@ public class ReservationServiceImpl implements ReservationService {
 		Room room = roomRepository.findById(request.getRoomId())
 				.orElseThrow(() -> new RuntimeException("Room not found"));
 
-		Reservation reservation = Reservation.builder().user(user).room(room).startTime(request.getStartTime())
-				.endTime(request.getEndTime()).build();
+		if (request.getSlots() == null || request.getSlots().isEmpty()) {
+			throw new RuntimeException("At least one slot is required");
+		}
+
+		LocalDateTime startTime = request.getSlots().stream().map(ReservationSlotRequest::getStartTime)
+				.min(LocalDateTime::compareTo).orElseThrow(() -> new RuntimeException("Slots must have start time"));
+		LocalDateTime endTime = request.getSlots().stream().map(ReservationSlotRequest::getEndTime)
+				.max(LocalDateTime::compareTo).orElseThrow(() -> new RuntimeException("Slots must have end time"));
+
+		Reservation reservation = Reservation.builder().user(user).room(room).startTime(startTime).endTime(endTime)
+				.status(ReservationStatus.CREATED) // 預設
+				.paymentStatus(ReservationPaymentStatus.UNPAID) // 預設未付款
+				.paymentMethod(null) // 還沒選付款方式
+				.paymentAmount(BigDecimal.ZERO).build();
+
+		List<ReservationSlot> slots = request.getSlots().stream().map(slotReq -> {
+			ReservationSlot slot = new ReservationSlot();
+			slot.setReservation(reservation);
+			slot.setRoom(room);
+			slot.setStartTime(slotReq.getStartTime());
+			slot.setEndTime(slotReq.getEndTime());
+			return slot;
+		}).collect(Collectors.toList());
+
+		reservation.setSlots(slots);
 
 		Reservation saved = reservationRepository.save(reservation);
 		return convertToResponse(saved);
@@ -60,10 +88,35 @@ public class ReservationServiceImpl implements ReservationService {
 			Room room = roomRepository.findById(request.getRoomId())
 					.orElseThrow(() -> new RuntimeException("Room not found"));
 
+			if (request.getSlots() == null || request.getSlots().isEmpty()) {
+				throw new RuntimeException("At least one slot is required");
+			}
+
+			LocalDateTime startTime = request.getSlots().stream().map(ReservationSlotRequest::getStartTime)
+					.min(LocalDateTime::compareTo)
+					.orElseThrow(() -> new RuntimeException("Slots must have start time"));
+			LocalDateTime endTime = request.getSlots().stream().map(ReservationSlotRequest::getEndTime)
+					.max(LocalDateTime::compareTo).orElseThrow(() -> new RuntimeException("Slots must have end time"));
+
 			reservation.setUser(user);
 			reservation.setRoom(room);
-			reservation.setStartTime(request.getStartTime());
-			reservation.setEndTime(request.getEndTime());
+			reservation.setStartTime(startTime);
+			reservation.setEndTime(endTime);
+//			清除舊 slots
+			reservation.getSlots().clear();
+
+//			新增 slots
+			List<ReservationSlot> newSlots = request.getSlots().stream().map(slotReq -> {
+				ReservationSlot slot = new ReservationSlot();
+				slot.setReservation(reservation);
+				slot.setRoom(room);
+				slot.setStartTime(slotReq.getStartTime());
+				slot.setEndTime(slotReq.getEndTime());
+				return slot;
+			}).collect(Collectors.toList());
+
+			reservation.getSlots().addAll(newSlots);
+
 			Reservation updated = reservationRepository.save(reservation);
 			return convertToResponse(updated);
 		});
@@ -87,16 +140,48 @@ public class ReservationServiceImpl implements ReservationService {
 		});
 	}
 
-	private ReservationResponse convertToResponse(Reservation reservation) {
-		ReservationResponse response = new ReservationResponse();
-		response.setId(reservation.getId());
-		response.setUserId(reservation.getUser().getId());
-		response.setUsername(reservation.getUser().getUsername());
-		response.setRoomId(reservation.getRoom().getId());
-		response.setRoomName(reservation.getRoom().getName());
-		response.setStartTime(reservation.getStartTime());
-		response.setEndTime(reservation.getEndTime());
-		response.setStatus(reservation.getStatus());
-		return response;
+	@Override
+	public Optional<ReservationResponse> confirmReservation(Long id) {
+		return reservationRepository.findById(id).map(reservation -> {
+//			CREATED 狀態才允許付款確認
+			if (reservation.getStatus() != ReservationStatus.CREATED) {
+				throw new IllegalStateException("Reservation cannot be confirmed");
+			}
+			reservation.setStatus(ReservationStatus.CONFIRMED);
+			reservation.setPaymentStatus(ReservationPaymentStatus.PAID);
+			reservation.setPaidAt(LocalDateTime.now());
+			reservation.setUpdatedAt(LocalDateTime.now());
+			Reservation updated = reservationRepository.save(reservation);
+			return convertToResponse(updated);
+		});
 	}
+
+	@Override
+	public Optional<ReservationResponse> refundReservation(Long id) {
+		return reservationRepository.findById(id).map(reservation -> {
+			reservation.setStatus(ReservationStatus.REFUNDED);
+			reservation.setRefundedAt(LocalDateTime.now());
+			Reservation updated = reservationRepository.save(reservation);
+			return convertToResponse(updated);
+		});
+	}
+
+	private ReservationResponse convertToResponse(Reservation reservation) {
+		List<ReservationSlotResponse> slotResponses = reservation
+				.getSlots().stream().map(slot -> ReservationSlotResponse.builder().id(slot.getId())
+						.startTime(slot.getStartTime()).endTime(slot.getEndTime()).build())
+				.collect(Collectors.toList());
+
+		return ReservationResponse.builder().id(reservation.getId()).userId(reservation.getUser().getId())
+				.username(reservation.getUser().getUsername()).roomId(reservation.getRoom().getId())
+				.roomName(reservation.getRoom().getName()).startTime(reservation.getStartTime())
+				.endTime(reservation.getEndTime()).status(reservation.getStatus())
+				.paymentStatus(reservation.getPaymentStatus()).paymentMethod(reservation.getPaymentMethod())
+				.paymentAmount(reservation.getPaymentAmount()).createdAt(reservation.getCreatedAt())
+				.updatedAt(reservation.getUpdatedAt()).paymentDueAt(reservation.getPaymentDueAt())
+				.paidAt(reservation.getPaidAt()).cancelledAt(reservation.getCancelledAt())
+				.refundedAt(reservation.getRefundedAt()).note(reservation.getNote())
+				.statusHistoryJson(reservation.getStatusHistoryJson()).slots(slotResponses).build();
+	}
+
 }

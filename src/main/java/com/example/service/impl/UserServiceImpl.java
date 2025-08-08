@@ -88,17 +88,29 @@ public class UserServiceImpl implements UserService {
 		}
 		return false;
 	}
-	
+
 	@Override
 	public Optional<UserResponse> upgradeUserRole(Long userId, Role newRole) {
-	    return userRepository.findById(userId).map(user -> {
-	        user.setRole(newRole);
-	        User updated = userRepository.save(user);
-	        return convertToResponse(updated);
-	    });
+		return userRepository.findById(userId).map(user -> {
+			user.setRole(newRole);
+			User updated = userRepository.save(user);
+			return convertToResponse(updated);
+		});
 	}
 
 	private UserResponse convertToResponse(User user) {
-		return new UserResponse(user.getId(), user.getUsername(), user.getRole(), user.getEmail());
+		return UserResponse.builder().id(user.getId()).username(user.getUsername()).role(user.getRole())
+				.email(user.getEmail()).build();
 	}
+
+	private User convertToEntity(RegisterRequest request) {
+		return User.builder().username(request.getUsername()).password(passwordEncoder.encode(request.getPassword()))
+				.email(request.getEmail()).role(Role.USER).build();
+	}
+
+	private void updateFromRequest(User user, UpdateProfileRequest request) {
+		user.setUsername(request.getUsername());
+		user.setEmail(request.getEmail());
+	}
+
 }

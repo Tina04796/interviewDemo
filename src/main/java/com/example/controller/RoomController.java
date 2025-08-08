@@ -64,7 +64,7 @@ public class RoomController {
         if (deleted) {
             return ResponseEntity.noContent().build();
         } else {
-            return ResponseEntity.status(404).body(Map.of("error", "找不到此房間"));
+            return ResponseEntity.status(404).body(Map.of("error", "Room not found"));
         }
     }
 }

@@ -11,12 +11,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RoomRequest {
 
-	@NotBlank(message = "房間名稱不能空白")
+	@NotBlank(message = "Room name required")
 	private String name;
 
 	private String location;
 
-	@Min(value = 1, message = "容量必須大於0")
+	@Min(value = 1, message = "Must be greater than 0")
 	private Integer capacity;
 
 }

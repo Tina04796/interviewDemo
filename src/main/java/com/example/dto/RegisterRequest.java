@@ -11,13 +11,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RegisterRequest {
 
-	@NotBlank(message = "帳號不能空白")
+	@NotBlank(message = "Username required")
     private String username;
 
-    @NotBlank(message = "密碼不能空白")
+    @NotBlank(message = "Password required")
     private String password;
 
-    @Email(message = "Email錯誤")
+    @Email(message = "Invalid email")
     private String email;
 
 }

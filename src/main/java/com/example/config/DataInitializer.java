@@ -22,12 +22,12 @@ public class DataInitializer implements CommandLineRunner {
         if (!adminExists) {
             User admin = User.builder()
                     .username("admin")
-                    .password(passwordEncoder.encode("admin123"))  // 預設密碼，之後再改
+                    .password(passwordEncoder.encode("admin123"))  // Default password, change later
                     .email("admin@example.com")
                     .role(Role.ADMIN)
                     .build();
             userRepository.save(admin);
-            System.out.println("系統初始化：建立預設管理員帳號 admin / admin123");
+            System.out.println("Init: create default admin (admin/admin123)");
         }
     }
 }
